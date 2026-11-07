@@ -26,10 +26,12 @@ Experimental providers require their own credentials and are fixture-tested only
 
 Do not run live checks in pull-request CI.
 
-## Publish
+## Distribution
+
+This project is used from a local checkout or the public repository. npm publication is optional and not required for local use.
 
 ```powershell
-npm publish --access public
+opencode plugin add ./opencode-openfree-models
 ```
 
 ## GitHub release
@@ -44,6 +46,6 @@ Include:
 
 ## Rollback
 
-- Unpublish or deprecate the npm version if necessary.
+- Revert the tag/commit and re-sync the local plugin.
 - Publish a patch release with the previous behavior.
 - Do not rewrite git history for a released tag.
