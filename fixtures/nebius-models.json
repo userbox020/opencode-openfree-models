@@ -1,0 +1,11 @@
+{
+  "data": [
+    { "id": "meta-llama/Llama-3.3-70B-Instruct" },
+    {
+      "id": "Qwen/Qwen3-235B-A22B",
+      "context_window": 65536,
+      "max_completion_tokens": 4096,
+      "supported_parameters": ["tools"]
+    }
+  ]
+}

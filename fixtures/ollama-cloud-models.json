@@ -1,0 +1,22 @@
+{
+  "models": [
+    {
+      "slug": "gpt-oss:120b",
+      "display_name": "GPT-OSS 120B",
+      "context_window": 131072,
+      "max_context_window": 131072,
+      "input_modalities": ["text"],
+      "supported_in_api": true,
+      "visibility": "list"
+    },
+    {
+      "slug": "clef:27b",
+      "display_name": "Clef 27B",
+      "context_window": 65536,
+      "capabilities": ["decision", "vision"],
+      "input_modalities": ["text", "image"],
+      "supported_in_api": true,
+      "visibility": "list"
+    }
+  ]
+}

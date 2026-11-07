@@ -1,0 +1,17 @@
+{
+  "data": [
+    { "id": "seed-2-0-pro-260328" },
+    {
+      "id": "seed-2-0-code-preview-260328",
+      "context_window": 65536,
+      "max_completion_tokens": 4096,
+      "supported_parameters": ["tools"]
+    },
+    { "id": "seed-2-0-mini-260215" },
+    { "id": "seed-2-0-lite-260228" },
+    { "id": "kimi-k2-thinking-251104" },
+    { "id": "glm-4-7-251222" },
+    { "id": "gpt-oss-120b-250805" },
+    { "id": "unlisted-paid-model" }
+  ]
+}

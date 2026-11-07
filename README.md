@@ -1,0 +1,321 @@
+# OPENFREE Models for OpenCode
+
+One OpenCode v2 plugin. Free model providers with clear `OPENFREE` labels. No local models.
+
+`opencode-openfree-models` discovers free models from Kilo, OpenRouter, and Ollama Cloud, applies an explicit free/privacy policy, and registers them as separate provider namespaces:
+
+```text
+OPENFREE Kilo Free
+OPENFREE OpenRouter Free
+OPENFREE Ollama Cloud
+```
+
+The plugin does not impersonate clients, rotate accounts, bypass quotas, run a local gateway, or fall back to paid models.
+
+## Providers
+
+| Provider ID | Display name | Source | Auth | Free class | Privacy |
+|---|---|---|---|---|---|
+| `free-kilo` | `OPENFREE Kilo Free` | Kilo public gateway | none | free-tier | may train |
+| `free-openrouter` | `OPENFREE OpenRouter Free` | OpenRouter zero-price models | OpenCode `openrouter` connection or `OPENROUTER_API_KEY` | zero-price | unknown |
+| `free-ollama-cloud` | `OPENFREE Ollama Cloud` | Ollama Cloud catalog | OpenCode `ollama-cloud` connection or `OLLAMA_API_KEY` | free-tier | unknown |
+
+OpenCode Zen free models are intentionally not duplicated. Use the native `opencode/<model-id>` provider directly.
+
+No local Ollama, LM Studio, or other local provider is registered.
+
+### Experimental adapters
+
+These adapters are fixture-tested and available in the repo, but not live-verified for every account or region:
+
+| Provider ID | Display name | Free class | Auth |
+|---|---|---|---|
+| `free-gemini` | `OPENFREE Gemini` | free-tier | `GEMINI_API_KEY` or `google` connection |
+| `free-groq` | `OPENFREE Groq` | free-tier | `GROQ_API_KEY` or `groq` connection |
+| `free-mistral` | `OPENFREE Mistral` | free-tier | `MISTRAL_API_KEY` or `mistral` connection |
+| `free-cohere` | `OPENFREE Cohere` | free-tier | `COHERE_API_KEY` or `cohere` connection |
+| `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID; discovery-only until native protocol adapter |
+| `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` or `sambanova` connection |
+| `free-zai` | `OPENFREE Z.ai` | free-tier | `ZHIPU_API_KEY` or `zai` connection |
+| `free-nvidia` | `OPENFREE NVIDIA NIM` | trial-credit | `NVIDIA_API_KEY` or `nvidia` connection |
+| `free-alibaba` | `OPENFREE Alibaba Model Studio` | trial-credit | `DASHSCOPE_API_KEY` or `alibaba` connection |
+| `free-nebius` | `OPENFREE Nebius` | trial-credit | `NEBIUS_API_KEY` or `nebius` connection |
+| `free-bazaarlink` | `OPENFREE BazaarLink` | free-tier | `BAZAARLINK_API_KEY` |
+| `free-byteplus` | `OPENFREE BytePlus` | trial-credit | `BYTEPLUS_API_KEY` |
+| `free-kimchi` | `OPENFREE Kimchi` | free-tier | `KIMCHI_API_KEY` |
+
+Trial-credit providers require `allowTrialCredits: true`. Experimental adapters are enabled by default but skip immediately when no credential is present. Disable providers you do not use to reduce startup work.
+
+Groq free-tier models are registered tool-less because the 8K TPM limit cannot fit OpenCode's tool schemas. They work with the `general` or `explorer` agent, or in a clean project; the full `build` agent prompt may exceed the limit.
+
+## Install
+
+```powershell
+opencode plugin add opencode-openfree-models@0.2.0
+```
+
+For local development from this repository:
+
+```powershell
+opencode plugin add ./opencode-openfree-models
+```
+
+Or add an explicit entry:
+
+```jsonc
+{
+  "plugins": [
+    {
+      "package": "./opencode-openfree-models",
+      "options": {}
+    }
+  ]
+}
+```
+
+Restart OpenCode or the service and start a new session.
+
+## Authentication
+
+### Kilo
+
+No account or API key required for the public free pool.
+
+### OpenRouter
+
+Use an existing OpenCode connection:
+
+```powershell
+opencode auth login
+```
+
+Select **OpenRouter**.
+
+Or set:
+
+```powershell
+$env:OPENROUTER_API_KEY = "..."
+```
+
+The plugin reuses the existing `openrouter` integration connection when present.
+
+### Ollama Cloud
+
+Use an existing OpenCode connection:
+
+```powershell
+opencode auth login
+```
+
+Select **Ollama Cloud**.
+
+Or set:
+
+```powershell
+$env:OLLAMA_API_KEY = "..."
+```
+
+The plugin reuses the existing `ollama-cloud` integration connection when present.
+
+### Cloudflare Workers AI
+
+Cloudflare needs two values: an **Account ID** and an **API token**.
+
+#### Find your Account ID
+
+Use either dashboard method:
+
+1. Open [dash.cloudflare.com](https://dash.cloudflare.com/?to=/:account/home), press `Ctrl/Cmd + K`, type `Copy account ID`, and select the result.
+2. Or open **Workers & Pages**, find **Account Details**, and copy **Account ID**.
+
+The account ID is the hex string in the dashboard URL:
+
+```text
+https://dash.cloudflare.com/<ACCOUNT_ID>
+```
+
+#### Create the API token
+
+1. Open [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens).
+2. Select **Create Token**.
+3. Use **Create Workers AI API Token** if available, or create a custom token.
+4. Add an **Account** policy:
+   - Permission: **Workers AI → Read**
+   - Account resources: **Include → your account**
+5. Optionally set an expiration and IP restriction.
+6. Create the token and copy it once.
+
+No Zone permission is required for Workers AI inference.
+
+#### Configure the plugin
+
+```powershell
+$env:CLOUDFLARE_API_TOKEN = "..."
+$env:CLOUDFLARE_ACCOUNT_ID = "..."
+```
+
+Or keep the account ID in project config and the token in the environment:
+
+```json
+{
+  "providers": {
+    "cloudflare": {
+      "enabled": true,
+      "accountId": "YOUR_ACCOUNT_ID"
+    }
+  }
+}
+```
+
+Never commit the API token.
+
+## Where to get API keys
+
+### Supported providers
+
+| Provider | Key / account link | Notes |
+|---|---|---|
+| Kilo | [app.kilo.ai](https://app.kilo.ai) | No key is required for the public free pool. An account is optional. |
+| OpenRouter | [openrouter.ai/settings/keys](https://openrouter.ai/settings/keys) | Use the `openrouter` OpenCode connection or `OPENROUTER_API_KEY`. |
+| Ollama Cloud | [ollama.com/settings/keys](https://ollama.com/settings/keys) | Use the `ollama-cloud` OpenCode connection or `OLLAMA_API_KEY`. |
+| OpenCode Console | [opencode.ai/auth](https://opencode.ai/auth) | Native `opencode/<id>` free models. This plugin does not register them. |
+
+### Roadmap providers
+
+These are not supported by 0.1.0 yet. The links are for the planned adapters.
+
+| Provider | Key link | Notes |
+|---|---|---|
+| Google AI Studio / Gemini | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) | Free-tier quotas are model/project-specific. |
+| Groq | [console.groq.com/keys](https://console.groq.com/keys) | Free plan has RPM/RPD/TPM limits; tool-less by default. |
+| Cloudflare Workers AI | [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) | Also needs the account ID. Token policy: Account → Workers AI → Read. |
+| SambaNova | [cloud.sambanova.ai/apis](https://cloud.sambanova.ai/apis) | Free tier limits apply. |
+| Z.ai | [z.ai/manage-apikey/apikey-list](https://z.ai/manage-apikey/apikey-list) | Only specific flash models are free. |
+| NVIDIA NIM | [build.nvidia.com/settings/api-keys](https://build.nvidia.com/settings/api-keys) | Trial/evaluation terms apply. |
+| Mistral | [console.mistral.ai/api-keys](https://console.mistral.ai/api-keys) | Free mode may train on requests. |
+| Cohere | [dashboard.cohere.com/api-keys](https://dashboard.cohere.com/api-keys) | Trial/evaluation limits apply. |
+| Alibaba Model Studio | [alibabacloud.com Model Studio key guide](https://www.alibabacloud.com/help/en/model-studio/get-api-key) | New-user quotas are region-specific. |
+| Nebius Token Factory | [studio.nebius.com/settings/api-keys](https://studio.nebius.com/settings/api-keys) | Credits expire; review data-use terms. |
+| BazaarLink | [bazaarlink.ai](https://bazaarlink.ai) | `auto:free` is the free route. |
+| BytePlus Ark | [console.byteplus.com/ark](https://console.byteplus.com/ark) | Free credits are account/region-specific. |
+| Kimchi | [app.kimchi.dev](https://app.kimchi.dev) | Free-tier terms apply. |
+
+## Configuration
+
+Project config lives at `.opencode/free-models.json`.
+
+Strict mode:
+
+```json
+{
+  "providers": {
+    "kilo": { "enabled": true },
+    "openrouter": { "enabled": true, "env": "OPENROUTER_API_KEY" },
+    "ollamaCloud": { "enabled": true, "env": "OLLAMA_API_KEY" }
+  },
+  "policy": {
+    "allowFreeTier": true,
+    "allowTraining": false,
+    "allowUnknownPrivacy": false,
+    "allowTrialCredits": false
+  },
+  "catalog": {
+    "timeoutMs": 8000,
+    "ttlSeconds": 21600
+  }
+}
+```
+
+Broad mode enables training-enabled and unknown-privacy providers:
+
+```json
+{
+  "policy": {
+    "allowFreeTier": true,
+    "allowTraining": true,
+    "allowUnknownPrivacy": true,
+    "allowTrialCredits": false
+  }
+}
+```
+
+Strict mode may hide every model from a provider. That is intentional.
+
+## Commands
+
+```text
+/free-models            List eligible models
+/free-models refresh    Fetch catalogs and reload transforms
+/free-models doctor     Show cache, auth presence, policy, diagnostics
+/free-models privacy    Show training/privacy labels
+```
+
+## Privacy
+
+- Kilo free entries advertise `mayTrainOnYourPrompts: true`.
+- OpenRouter free-model upstream policies are not uniform; they are labeled `unknown`.
+- Ollama Cloud free-tier privacy terms are labeled `unknown`.
+- Discovery sends no prompts, repository contents, file paths, or session titles.
+- No telemetry and no prompt logging.
+- Do not send secrets or private repository content to training-enabled or unknown-privacy providers.
+
+See [docs/privacy.md](docs/privacy.md) and [docs/faq.md](docs/faq.md).
+
+## Security
+
+- Credentials come from OpenCode connections or environment variables.
+- No secrets in project config.
+- No client impersonation.
+- No account rotation or quota evasion.
+- No paid fallback.
+- No local gateway in the MVP.
+- Remote catalogs are treated as untrusted data.
+
+See [docs/security.md](docs/security.md).
+
+## Development
+
+```powershell
+cd opencode-openfree-models
+npm test
+npm run check
+npm run pack:check
+```
+
+The test suite uses fixtures and makes no network requests.
+
+## Repository layout
+
+```text
+index.js                Package-directory entrypoint
+src/
+  index.js              Plugin entry and registration
+  config.js             Config loading and merging
+  credentials.js        OpenCode/env credential resolution
+  discovery.js          Provider discovery orchestration
+  policy.js             Free/privacy filtering
+  cache.js              Versioned inventory cache
+  opencode.js           Provider/model projection
+  commands.js           /free-models commands
+  format.js             Human-readable output
+  providers/registry.js Provider metadata
+  adapters/             Kilo, OpenRouter, Ollama Cloud, and experimental providers
+  adapters/openai-compatible.js  Shared OpenAI-compatible adapter factory
+test/                   Offline tests
+fixtures/               Catalog snapshots
+docs/                   Architecture, config, providers, privacy, security
+```
+
+## Release
+
+```powershell
+npm test
+npm run check
+npm run pack:check
+npm publish --access public
+```
+
+## License
+
+MIT
+

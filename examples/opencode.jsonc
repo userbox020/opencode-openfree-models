@@ -1,0 +1,15 @@
+{
+  "plugins": [
+    {
+      "package": "opencode-openfree-models",
+      // For local development, replace the package above with your checkout:
+      // "package": "./opencode-openfree-models",
+      "options": {
+        "policy": {
+          "allowTraining": false,
+          "allowUnknownPrivacy": false
+        }
+      }
+    }
+  ]
+}

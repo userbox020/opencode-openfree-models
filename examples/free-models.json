@@ -1,0 +1,17 @@
+{
+  "providers": {
+    "kilo": { "enabled": true },
+    "openrouter": { "enabled": true, "env": "OPENROUTER_API_KEY" },
+    "ollamaCloud": { "enabled": true, "env": "OLLAMA_API_KEY" }
+  },
+  "policy": {
+    "allowFreeTier": true,
+    "allowTraining": false,
+    "allowUnknownPrivacy": false,
+    "allowTrialCredits": false
+  },
+  "catalog": {
+    "timeoutMs": 8000,
+    "ttlSeconds": 21600
+  }
+}

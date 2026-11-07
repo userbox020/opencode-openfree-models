@@ -1,0 +1,11 @@
+{
+  "data": [
+    { "id": "mistral-small-latest", "context_window": 131072, "max_completion_tokens": 32768, "supported_parameters": ["tools"] },
+    { "id": "codestral-latest" },
+    { "id": "devstral-small-latest" },
+    { "id": "devstral-medium-latest" },
+    { "id": "magistral-small-latest" },
+    { "id": "magistral-medium-latest" },
+    { "id": "mistral-large-latest" }
+  ]
+}

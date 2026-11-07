@@ -1,0 +1,46 @@
+{
+  "name": "opencode-openfree-models",
+  "version": "0.2.0",
+  "description": "OpenCode v2 plugin that registers free model providers with OPENFREE namespaces and privacy policy filtering.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check index.js && node --check src/index.js && node --test test/*.test.mjs",
+    "pack:check": "npm pack --dry-run"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "free-models",
+    "kilo",
+    "openrouter",
+    "ollama-cloud",
+    "gemini",
+    "groq",
+    "cloudflare",
+    "sambanova",
+    "zai",
+    "nvidia",
+    "mistral",
+    "cohere",
+    "alibaba",
+    "nebius",
+    "bazaarlink",
+    "byteplus",
+    "kimchi"
+  ],
+  "license": "MIT"
+}

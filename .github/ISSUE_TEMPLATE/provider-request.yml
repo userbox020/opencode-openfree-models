@@ -1,0 +1,43 @@
+name: Provider request
+description: Request support for another free model provider
+title: "[provider] "
+labels: ["provider"]
+body:
+  - type: input
+    id: provider
+    attributes:
+      label: Provider name
+    validations:
+      required: true
+  - type: input
+    id: docs
+    attributes:
+      label: Official documentation URL
+    validations:
+      required: true
+  - type: textarea
+    id: models
+    attributes:
+      label: Free models and limits
+      description: List model IDs, context/output limits, rate limits, and how free status is determined.
+    validations:
+      required: true
+  - type: textarea
+    id: auth
+    attributes:
+      label: Authentication
+      description: Explain whether anonymous access is documented, or which account/key is required.
+    validations:
+      required: true
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy and terms
+      description: Training, retention, regional restrictions, and any relevant terms.
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: The provider documents this free access; it does not require client impersonation or quota evasion.
+          required: true

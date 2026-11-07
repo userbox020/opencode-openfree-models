@@ -1,0 +1,59 @@
+name: Bug report
+description: Report a plugin bug with a minimal reproduction
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include API keys, tokens, prompts, private source code, or personal data.
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: opencode
+    attributes:
+      label: OpenCode version
+      placeholder: 2.0.29
+    validations:
+      required: true
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Provider
+      options:
+        - free-kilo
+        - free-openrouter
+        - free-ollama-cloud
+        - multiple
+        - not provider-specific
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: `/free-models doctor` output
+      description: Redact secrets and private paths.
+      render: text
+  - type: textarea
+    id: config
+    attributes:
+      label: Redacted config
+      description: Remove keys, tokens, and private paths.
+      render: json

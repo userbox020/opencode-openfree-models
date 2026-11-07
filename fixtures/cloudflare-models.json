@@ -1,0 +1,12 @@
+{
+  "result": [
+    { "id": "uuid-1", "name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast", "properties": [{ "property_id": "context_window", "value": "24000" }, { "property_id": "function_calling", "value": "true" }] },
+    { "id": "uuid-2", "name": "@cf/qwen/qwen2.5-coder-32b-instruct", "properties": [{ "property_id": "context_window", "value": "131072" }, { "property_id": "function_calling", "value": "true" }] },
+    { "id": "uuid-3", "name": "@cf/mistralai/mistral-small-3.1-24b-instruct", "properties": [{ "property_id": "context_window", "value": "131072" }, { "property_id": "function_calling", "value": "true" }] },
+    { "id": "uuid-4", "name": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b", "properties": [{ "property_id": "context_window", "value": "131072" }, { "property_id": "function_calling", "value": "true" }] },
+    { "id": "uuid-5", "name": "@cf/moonshotai/kimi-k2.5", "properties": [{ "property_id": "context_window", "value": "131072" }, { "property_id": "function_calling", "value": "true" }] },
+    { "id": "uuid-6", "name": "@cf/moonshotai/kimi-k2.6", "properties": [{ "property_id": "context_window", "value": "131072" }, { "property_id": "function_calling", "value": "true" }] },
+    { "id": "uuid-7", "name": "@cf/zai-org/glm-4.7-flash", "properties": [{ "property_id": "context_window", "value": "131072" }, { "property_id": "function_calling", "value": "true" }] },
+    { "id": "uuid-8", "name": "@cf/unlisted/model" }
+  ]
+}

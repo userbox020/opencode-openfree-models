@@ -1,0 +1,11 @@
+{
+  "data": [
+    { "id": "qwen-plus" },
+    {
+      "id": "qwen-turbo",
+      "context_window": 65536,
+      "max_completion_tokens": 4096,
+      "supported_parameters": ["tools"]
+    }
+  ]
+}

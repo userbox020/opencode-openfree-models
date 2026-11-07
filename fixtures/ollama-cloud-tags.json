@@ -1,0 +1,6 @@
+{
+  "models": [
+    { "name": "gpt-oss:120b", "capabilities": ["completion", "tools", "thinking"] },
+    { "name": "clef:27b", "capabilities": ["decision", "vision"] }
+  ]
+}

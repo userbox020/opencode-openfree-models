@@ -1,0 +1,10 @@
+{
+  "models": [
+    { "name": "command-a-03-2025", "context_length": 256000 },
+    { "name": "command-r-plus-08-2024", "context_length": 128000 },
+    { "name": "command-r-08-2024", "context_length": 128000 },
+    { "name": "command-r7b-12-2024", "context_length": 128000 },
+    { "name": "north-mini-code-6b" },
+    { "name": "embed-english-v3.0", "context_length": 512 }
+  ]
+}

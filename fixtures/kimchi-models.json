@@ -1,0 +1,13 @@
+{
+  "data": [
+    { "id": "minimax-m3" },
+    { "id": "kimi-k2.7" },
+    { "id": "kimi-k2.6" },
+    { "id": "kimi-k2.5" },
+    { "id": "nemotron-3-ultra-fp4" },
+    { "id": "minimax-m2.7" },
+    { "id": "claude-opus-4-6" },
+    { "id": "claude-sonnet-4-6" },
+    { "id": "fixture-not-allowlisted" }
+  ]
+}

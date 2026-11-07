@@ -1,0 +1,10 @@
+{
+  "data": [
+    { "id": "DeepSeek-V3.1" },
+    { "id": "Meta-Llama-3.3-70B-Instruct" },
+    { "id": "gpt-oss-120b" },
+    { "id": "DeepSeek-V3.2" },
+    { "id": "gemma-4-31B-it" },
+    { "id": "fixture-not-allowlisted" }
+  ]
+}

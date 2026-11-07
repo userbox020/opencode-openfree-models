@@ -1,0 +1,8 @@
+{
+  "data": [
+    { "id": "openai/gpt-oss-120b", "context_window": 131072, "max_completion_tokens": 32768, "supported_parameters": ["tools"] },
+    { "id": "openai/gpt-oss-20b", "context_window": 131072, "max_completion_tokens": 32768, "supported_parameters": ["tools"] },
+    { "id": "qwen/qwen3.8-27b", "context_window": 131072, "max_completion_tokens": 32768, "supported_parameters": ["tools"] },
+    { "id": "llama-3.3-70b-versatile", "context_window": 131072, "max_completion_tokens": 32768, "supported_parameters": ["tools"] }
+  ]
+}
