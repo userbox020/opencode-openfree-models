@@ -269,7 +269,7 @@ test("registers Kilo provider and command when training is allowed", async () =>
   assert.equal(providers[0].models[0].id, "kilo-auto/free")
   assert.equal(commands.length, 1)
   assert.equal(commands[0].name, "free-models")
-  assert.ok(storage.get("free-models:inventory:v12"))
+  assert.ok(storage.get("free-models:inventory:v15"))
 })
 
 test("does not register a provider when policy blocks every model", async () => {

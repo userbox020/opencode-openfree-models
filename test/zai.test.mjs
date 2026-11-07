@@ -3,7 +3,7 @@ import test from "node:test"
 import { discoverZai, normalizeZaiModel } from "../src/adapters/zai.js"
 import fixture from "../fixtures/zai-models.json" with { type: "json" }
 
-const expectedIDs = ["glm-4.7-flash", "glm-4.5-flash", "glm-4.6v-flash"]
+const expectedIDs = ["glm-4.7-flash", "glm-4.5-flash"]
 
 test("normalizes only allowlisted Z.ai free models", () => {
   const models = fixture.data.map(normalizeZaiModel).filter(Boolean)
@@ -16,6 +16,22 @@ test("normalizes only allowlisted Z.ai free models", () => {
     assert.equal(model.freeClass, "free-tier")
     assert.deepEqual(model.privacy, { trainsOnPrompts: "unknown", source: "https://docs.z.ai/guides/overview/pricing" })
   }
+})
+
+test("adds static free Z.ai models when the catalog omits them", async () => {
+  const result = await discoverZai({
+    providers: { zai: { enabled: true, env: "ZHIPU_API_KEY" } },
+    credentials: { zai: { key: "test-key" } },
+    catalog: { timeoutMs: 1000 },
+    fetch: async () =>
+      new Response(JSON.stringify({ data: [{ id: "glm-5" }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+  })
+
+  assert.deepEqual(result.allModels.map((model) => model.id), expectedIDs)
+  assert.equal(result.allModels.find((model) => model.id === "glm-4.5-flash").context, 131072)
 })
 
 test("discovers Z.ai models using only the fixture", async () => {
@@ -41,3 +57,4 @@ test("discovers Z.ai models using only the fixture", async () => {
   assert.ok(result.allModels.every((model) => model.tools))
   assert.deepEqual(result.diagnostics, [])
 })
+

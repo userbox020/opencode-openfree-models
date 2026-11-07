@@ -79,7 +79,7 @@ These adapters are fixture-tested but not live-verified for every account or reg
 | `free-cohere` | `OPENFREE Cohere` | free-tier | `COHERE_API_KEY` / `cohere` connection | Trial/evaluation limits |
 | `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID | Discovery works; inference currently blocked by OpenCode content-array incompatibility; native protocol adapter required |
 | `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` / `sambanova` connection | Catalog works; inference currently requires a payment method on the SambaNova account |
-| `free-zai` | `OPENFREE Z.ai` | free-tier | `ZHIPU_API_KEY` / `zai` connection | Only selected flash models |
+| `free-zai` | `OPENFREE Z.ai` | free-tier | `ZHIPU_API_KEY` / `zai` connection | Catalog omits free flash models; plugin adds static entries. `glm-4.5-flash` and `glm-4.7-flash` live-verified. `glm-4.6v-flash` excluded due tool-loop instability. |
 | `free-nvidia` | `OPENFREE NVIDIA NIM` | trial-credit | `NVIDIA_API_KEY` / `nvidia` connection | Requires `allowTrialCredits` |
 | `free-alibaba` | `OPENFREE Alibaba Model Studio` | trial-credit | `DASHSCOPE_API_KEY` / `alibaba` connection | New-user quota |
 | `free-nebius` | `OPENFREE Nebius` | trial-credit | `NEBIUS_API_KEY` / `nebius` connection | Credits + data-use terms |

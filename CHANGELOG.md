@@ -9,6 +9,7 @@
 - Add Cloudflare account-ID handling. Cloudflare model discovery works; inference is discovery-only until a native protocol adapter is added because its OpenAI-compatible endpoint rejects array-form message content.
 - Add Gemini query-key catalog support; allowlist uses 3.x models because some 2.5 models are unavailable to new users.
 - Register Groq free-tier models tool-less because the 8K TPM limit cannot fit OpenCode tool schemas.
+- Add static Z.ai free models because the Z.ai catalog omits them; `glm-4.5-flash` and `glm-4.7-flash` are live-verified, while `glm-4.6v-flash` is excluded due tool-loop instability.
 - Add root `index.js` entrypoint for package-directory auto-discovery.
 - Keep stable Kilo, OpenRouter, and Ollama Cloud adapters.
 
