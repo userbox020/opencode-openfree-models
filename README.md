@@ -2,15 +2,30 @@
 
 One OpenCode v2 plugin. Free model providers with clear `OPENFREE` labels. No local models.
 
-`opencode-openfree-models` discovers free models from Kilo, OpenRouter, and Ollama Cloud, applies an explicit free/privacy policy, and registers them as separate provider namespaces:
+`opencode-openfree-models` discovers free models from 16 providers, applies an explicit free/privacy policy, and registers each provider as a separate namespace:
 
 ```text
 OPENFREE Kilo Free
 OPENFREE OpenRouter Free
 OPENFREE Ollama Cloud
+OPENFREE Gemini
+OPENFREE Groq
+OPENFREE Mistral
+OPENFREE Cohere
+OPENFREE Cloudflare
+OPENFREE SambaNova
+OPENFREE Z.ai
+OPENFREE NVIDIA NIM
+OPENFREE Alibaba Model Studio
+OPENFREE Nebius
+OPENFREE BazaarLink
+OPENFREE BytePlus
+OPENFREE Kimchi
 ```
 
 The plugin does not impersonate clients, rotate accounts, bypass quotas, run a local gateway, or fall back to paid models.
+
+**Status:** `0.2.0` · **45 offline tests** · stable Kilo/OpenRouter/Ollama Cloud · live-verified Gemini and Groq · Cloudflare discovery-only.
 
 ## Providers
 
@@ -26,23 +41,23 @@ No local Ollama, LM Studio, or other local provider is registered.
 
 ### Experimental adapters
 
-These adapters are fixture-tested and available in the repo, but not live-verified for every account or region:
+These adapters are available in `0.2.0`. Live verification depends on the provider, account, and region:
 
-| Provider ID | Display name | Free class | Auth |
-|---|---|---|---|
-| `free-gemini` | `OPENFREE Gemini` | free-tier | `GEMINI_API_KEY` or `google` connection |
-| `free-groq` | `OPENFREE Groq` | free-tier | `GROQ_API_KEY` or `groq` connection |
-| `free-mistral` | `OPENFREE Mistral` | free-tier | `MISTRAL_API_KEY` or `mistral` connection |
-| `free-cohere` | `OPENFREE Cohere` | free-tier | `COHERE_API_KEY` or `cohere` connection |
-| `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID; discovery-only until native protocol adapter |
-| `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` or `sambanova` connection |
-| `free-zai` | `OPENFREE Z.ai` | free-tier | `ZHIPU_API_KEY` or `zai` connection |
-| `free-nvidia` | `OPENFREE NVIDIA NIM` | trial-credit | `NVIDIA_API_KEY` or `nvidia` connection |
-| `free-alibaba` | `OPENFREE Alibaba Model Studio` | trial-credit | `DASHSCOPE_API_KEY` or `alibaba` connection |
-| `free-nebius` | `OPENFREE Nebius` | trial-credit | `NEBIUS_API_KEY` or `nebius` connection |
-| `free-bazaarlink` | `OPENFREE BazaarLink` | free-tier | `BAZAARLINK_API_KEY` |
-| `free-byteplus` | `OPENFREE BytePlus` | trial-credit | `BYTEPLUS_API_KEY` |
-| `free-kimchi` | `OPENFREE Kimchi` | free-tier | `KIMCHI_API_KEY` |
+| Provider ID | Display name | Free class | Auth | Verification |
+|---|---|---|---|---|
+| `free-gemini` | `OPENFREE Gemini` | free-tier | `GEMINI_API_KEY` or `google` connection | Live-verified with Gemini 3.8/3.6 Flash |
+| `free-groq` | `OPENFREE Groq` | free-tier | `GROQ_API_KEY` or `groq` connection | Live-verified; tool-less due to TPM |
+| `free-mistral` | `OPENFREE Mistral` | free-tier | `MISTRAL_API_KEY` or `mistral` connection | Fixture-tested |
+| `free-cohere` | `OPENFREE Cohere` | free-tier | `COHERE_API_KEY` or `cohere` connection | Fixture-tested |
+| `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID | Discovery-only; inference blocked by protocol mismatch |
+| `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` or `sambanova` connection | Fixture-tested |
+| `free-zai` | `OPENFREE Z.ai` | free-tier | `ZHIPU_API_KEY` or `zai` connection | Fixture-tested |
+| `free-nvidia` | `OPENFREE NVIDIA NIM` | trial-credit | `NVIDIA_API_KEY` or `nvidia` connection | Fixture-tested |
+| `free-alibaba` | `OPENFREE Alibaba Model Studio` | trial-credit | `DASHSCOPE_API_KEY` or `alibaba` connection | Fixture-tested |
+| `free-nebius` | `OPENFREE Nebius` | trial-credit | `NEBIUS_API_KEY` or `nebius` connection | Fixture-tested |
+| `free-bazaarlink` | `OPENFREE BazaarLink` | free-tier | `BAZAARLINK_API_KEY` | Fixture-tested |
+| `free-byteplus` | `OPENFREE BytePlus` | trial-credit | `BYTEPLUS_API_KEY` | Fixture-tested |
+| `free-kimchi` | `OPENFREE Kimchi` | free-tier | `KIMCHI_API_KEY` | Fixture-tested |
 
 Trial-credit providers require `allowTrialCredits: true`. Experimental adapters are enabled by default but skip immediately when no credential is present. Disable providers you do not use to reduce startup work.
 
@@ -50,14 +65,16 @@ Groq free-tier models are registered tool-less because the 8K TPM limit cannot f
 
 ## Install
 
-```powershell
-opencode plugin add opencode-openfree-models@0.2.0
-```
-
-For local development from this repository:
+The package is not published to npm yet. Install from this checkout:
 
 ```powershell
 opencode plugin add ./opencode-openfree-models
+```
+
+When published, the package command will be:
+
+```powershell
+opencode plugin add opencode-openfree-models@0.2.0
 ```
 
 Or add an explicit entry:
@@ -145,7 +162,7 @@ https://dash.cloudflare.com/<ACCOUNT_ID>
 5. Optionally set an expiration and IP restriction.
 6. Create the token and copy it once.
 
-No Zone permission is required for Workers AI inference.
+No Zone permission is required for model discovery. Cloudflare inference is currently blocked by a protocol mismatch between OpenCode’s message format and Cloudflare’s OpenAI-compatible endpoint, so Cloudflare models are discovery-only in `0.2.0`.
 
 #### Configure the plugin
 
@@ -180,9 +197,9 @@ Never commit the API token.
 | Ollama Cloud | [ollama.com/settings/keys](https://ollama.com/settings/keys) | Use the `ollama-cloud` OpenCode connection or `OLLAMA_API_KEY`. |
 | OpenCode Console | [opencode.ai/auth](https://opencode.ai/auth) | Native `opencode/<id>` free models. This plugin does not register them. |
 
-### Roadmap providers
+### Experimental provider key links
 
-These are not supported by 0.1.0 yet. The links are for the planned adapters.
+These providers are supported by `0.2.0`. Live verification depends on credentials and region.
 
 | Provider | Key link | Notes |
 |---|---|---|
@@ -241,6 +258,19 @@ Broad mode enables training-enabled and unknown-privacy providers:
 
 Strict mode may hide every model from a provider. That is intentional.
 
+All other providers are enabled by default and skip immediately when no credential is present. Cloudflare additionally needs an account ID:
+
+```json
+{
+  "providers": {
+    "cloudflare": {
+      "enabled": true,
+      "accountId": "YOUR_ACCOUNT_ID"
+    }
+  }
+}
+```
+
 ## Commands
 
 ```text
@@ -255,6 +285,10 @@ Strict mode may hide every model from a provider. That is intentional.
 - Kilo free entries advertise `mayTrainOnYourPrompts: true`.
 - OpenRouter free-model upstream policies are not uniform; they are labeled `unknown`.
 - Ollama Cloud free-tier privacy terms are labeled `unknown`.
+- Gemini free-tier data may be used for product improvement; labeled `may-train`.
+- Groq free-tier inference is labeled no-training by default.
+- Cloudflare is discovery-only; no prompts are sent to it by this plugin yet.
+- Other experimental providers carry per-provider labels; run `/free-models privacy`.
 - Discovery sends no prompts, repository contents, file paths, or session titles.
 - No telemetry and no prompt logging.
 - Do not send secrets or private repository content to training-enabled or unknown-privacy providers.
@@ -282,7 +316,7 @@ npm run check
 npm run pack:check
 ```
 
-The test suite uses fixtures and makes no network requests.
+The test suite uses fixtures and makes no network requests. Current suite: **45 tests**.
 
 ## Repository layout
 
