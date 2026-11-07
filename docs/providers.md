@@ -78,7 +78,7 @@ These adapters are fixture-tested but not live-verified for every account or reg
 | `free-mistral` | `OPENFREE Mistral` | free-tier | `MISTRAL_API_KEY` / `mistral` connection | Free mode may train |
 | `free-cohere` | `OPENFREE Cohere` | free-tier | `COHERE_API_KEY` / `cohere` connection | Trial/evaluation limits |
 | `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID | Discovery works; inference currently blocked by OpenCode content-array incompatibility; native protocol adapter required |
-| `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` / `sambanova` connection | Free-tier rate limits |
+| `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` / `sambanova` connection | Catalog works; inference currently requires a payment method on the SambaNova account |
 | `free-zai` | `OPENFREE Z.ai` | free-tier | `ZHIPU_API_KEY` / `zai` connection | Only selected flash models |
 | `free-nvidia` | `OPENFREE NVIDIA NIM` | trial-credit | `NVIDIA_API_KEY` / `nvidia` connection | Requires `allowTrialCredits` |
 | `free-alibaba` | `OPENFREE Alibaba Model Studio` | trial-credit | `DASHSCOPE_API_KEY` / `alibaba` connection | New-user quota |

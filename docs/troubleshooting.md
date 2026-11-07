@@ -106,6 +106,16 @@ Type mismatch of '/messages/0/content', 'array' not in 'string'
 
 This is a protocol incompatibility, not an account-ID or token-policy problem. The built-in `@opencode/ai/providers/cloudflare-workers-ai` package also uses the OpenAI-compatible protocol and fails the same way. Cloudflare is currently discovery-only in this plugin. A dedicated native Cloudflare `/ai/run/{model}` provider package is required for inference.
 
+## SambaNova says a payment method is required
+
+SambaNova model discovery works with a valid API key, but inference can return:
+
+```text
+A payment method is required. Add one at https://cloud.sambanova.ai/plans/billing to continue.
+```
+
+This is an account-level requirement. Add a payment method in the SambaNova console or use an account that already has one. The plugin cannot bypass it.
+
 ## Model list includes media models
 
 The OpenRouter adapter excludes models whose output is not text-only. If a new media model appears, open an issue with the model ID.
