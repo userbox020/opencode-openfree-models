@@ -125,7 +125,9 @@ Credential resolution:
     "env": "OLLAMA_API_KEY",
     "baseURL": "https://ollama.com/v1",
     "catalogURL": "https://ollama.com/v1/models",
-    "tagsURL": "https://ollama.com/api/tags"
+    "tagsURL": "https://ollama.com/api/tags",
+    "allowlist": [],
+    "denylist": []
   }
 }
 ```
@@ -135,6 +137,43 @@ Credential resolution:
 1. `OLLAMA_API_KEY`
 2. Active OpenCode `ollama-cloud` connection
 3. Active `free-ollama-cloud` connection
+
+#### Model filters
+
+Set these under `providers.ollamaCloud`:
+
+| Field | Default | Effect |
+|---|---|---|
+| `allowlist` | absent / `[]` | If nonempty, include only these exact model IDs |
+| `denylist` | absent / `[]` | Exclude these exact model IDs, even if allowlisted |
+
+There is no wildcard or provider-prefix matching. Empty/absent lists impose no filtering for that list, and **denylist wins**. Normal catalog eligibility and privacy policy filtering still apply.
+
+The Ollama catalog does not expose plan entitlement. Without an allowlist, the plugin can list models that return “not included in your free usage.” Only 7/25 worked on the tested free plan on 2026-11-06. An optional configuration for those seven IDs is:
+
+```json
+{
+  "providers": {
+    "ollamaCloud": {
+      "allowlist": [
+        "beam",
+        "gemma4:31b",
+        "gpt-oss:120b",
+        "gpt-oss:20b",
+        "nemotron-3-nano:30b",
+        "nemotron-3-super",
+        "nemotron-3-ultra"
+      ],
+      "denylist": []
+    }
+  },
+  "policy": {
+    "allowUnknownPrivacy": true
+  }
+}
+```
+
+These are observed account-specific results, not a guarantee of future free access. Run `/free-models refresh` after changing filters.
 
 ## Additional provider config
 
@@ -156,7 +195,7 @@ The experimental adapters use the same `providers` map:
 | `byteplus` | `free-byteplus` | `BYTEPLUS_API_KEY` | `trial-credit`; account/region-specific credits |
 | `kimchi` | `free-kimchi` | `KIMCHI_API_KEY` | Free-tier terms apply |
 
-`free-bazaarlink`, `free-byteplus`, and `free-kimchi` are plugin-only auth integrations. They are registered at startup even when no credential exists, so they can be connected with **Manually enter API Key** in the providers UI. A stored connection takes priority over the environment variable and persists across restarts.
+`free-bazaarlink`, `free-byteplus`, and `free-kimchi` are plugin-only auth integrations. They are registered at startup before discovery even when no credential exists, so they can be connected with **Manually enter API Key** in the providers UI. The environment variable takes priority over a stored connection; UI connections persist across restarts.
 
 ### Cloudflare Workers AI
 
@@ -183,6 +222,8 @@ Find the account ID in the dashboard:
 
 Create the token at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens). Use an **Account** policy with **Workers AI → Read** scoped to your account. No Zone permission is needed.
 
+Cloudflare is text-only in practice, **not agent-compatible**. Models are marked `tools: false`, but current OpenCode agents still expose tools regardless of `capabilities.tools = false`, causing content-array errors on tool calls. This is not resolved by changing credentials. See [provider results](providers.md#free-cloudflare).
+
 Trial-credit providers are excluded unless:
 
 ```json
@@ -199,6 +240,43 @@ Trial-credit providers are excluded unless:
 |---|---|---|
 | `timeoutMs` | `8000` | Per-request timeout |
 | `ttlSeconds` | `21600` | Inventory cache lifetime |
+
+The inventory cache key is `free-models:inventory:v17`. Cached provider records preserve `package` and `settings`, so Cloudflare retains `@opencode/ai/providers/cloudflare-workers-ai` after a cache hit.
+
+## Scripts
+
+Run from the repository checkout on **native Windows with PowerShell**, without Docker or WSL.
+
+### Workspace sync
+
+`npm run sync:workspace` copies `index.js`, `package.json`, `README.md`, and `src` to `.opencode/plugins/free-models`. Its default destination is `C:\_Work\__OPENFREE_AI\.opencode\plugins\free-models`; use `-Destination` for another workspace. It replaces the destination `src` directory and overwrites those root files, so preview before applying:
+
+```powershell
+npm run sync:workspace -- -DryRun
+# Optional destination override; still a preview:
+npm run sync:workspace -- -Destination "C:\path\to\workspace\.opencode\plugins\free-models" -DryRun
+```
+
+Remove `-DryRun` only when you intend to update the installed workspace plugin. `-Source` optionally overrides the source checkout. Sync does not copy tests or automatically restart OpenCode.
+
+### Live smoke tests
+
+`npm run smoke` uses `opencode.cmd` to run a short `general` agent prompt for each model. It makes live requests and consumes provider quota; it does not establish full tool/agent compatibility.
+
+```powershell
+npm run smoke -- -All -OutFile smoke.jsonl -SummaryFile smoke-summary.json -TimeoutSec 120
+npm run smoke -- -ModelsFile models.txt -OutFile smoke.jsonl -SummaryFile smoke-summary.json
+```
+
+| Option | Meaning |
+|---|---|
+| `-All` | Test all `free-` models returned by `opencode models --standalone` |
+| `-ModelsFile` | Instead of `-All`, read one full `provider/model` ID per nonblank line |
+| `-OutFile` | Required JSONL result path; overwritten at the start |
+| `-SummaryFile` | Required JSON summary path; overwritten at completion |
+| `-TimeoutSec` | Per-model timeout in seconds; default `60` |
+
+Choose exactly one of `-All` and `-ModelsFile`. Use existing output directories and disposable output filenames. Results distinguish plan limits (`PLAN_LIMIT`), protocol failures (`PROTOCOL`), rate limits, timeouts, and other errors.
 
 ## Restart behavior
 

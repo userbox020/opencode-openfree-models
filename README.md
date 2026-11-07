@@ -2,7 +2,7 @@
 
 One OpenCode v2 plugin. Free model providers with clear `OPENFREE` labels. No local models.
 
-`opencode-openfree-models` discovers free models from 16 providers, applies an explicit free/privacy policy, and registers each provider as a separate namespace:
+`opencode-openfree-models` discovers free-tier and zero-price model candidates through 16 provider adapters, applies an explicit free/privacy policy, and registers each provider as a separate namespace. Catalog inclusion does not guarantee account entitlement:
 
 ```text
 OPENFREE Kilo Free
@@ -25,15 +25,31 @@ OPENFREE Kimchi
 
 The plugin does not impersonate clients, rotate accounts, bypass quotas, run a local gateway, or fall back to paid models.
 
-**Status:** `0.2.0` · **45 offline tests** · stable Kilo/OpenRouter/Ollama Cloud · live-verified Gemini and Groq · Cloudflare discovery-only.
+**Status:** `0.2.0` · **54/54 offline tests passing** · **69 registered models across 7 providers** in the 2026-11-06 live check · Cloudflare text-only, not agent-compatible.
+
+## Live verification
+
+Snapshot from **2026-11-06**, running OpenCode natively on Windows (no Docker/WSL). Results depend on the account, quota, and upstream availability; an OK smoke result is not a guarantee of tool support.
+
+| Provider | Result |
+|---|---|
+| Kilo | **12/12 OK** |
+| Groq | **3/3 OK** |
+| Z.ai | **2/2 OK**: `glm-4.5-flash`, `glm-4.7-flash` |
+| OpenRouter | **12/14 OK**; `google/gemma-4-26b-a4b-it:free` and `google/gemma-4-31b-it:free` return upstream errors after about 97 seconds |
+| Gemini | **4/7 OK**: `gemini-3-flash-preview`, `gemini-3.1-flash-lite`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`; `gemini-3.1-pro-preview` hits the daily free-tier quota, `gemini-3.8-flash` is rate-limited/times out, and `gemma-4-31b-it` ends without `finish_reason` |
+| Cloudflare | **2/6 work for plain text**: `@cf/mistralai/mistral-small-3.1-24b-instruct`, `@cf/zai-org/glm-4.7-flash`; other models fail, respond off-prompt, or require a paid plan. Not agent-compatible; see below |
+| Ollama Cloud | **7/25 OK** on the current free plan; the other 18 return “not included in your free usage.” Use the optional allowlist below |
+
+Mistral, Cohere, NVIDIA, Alibaba, Nebius, BazaarLink, BytePlus, and Kimchi had no credentials and no registered models in this check. SambaNova's stored connection is gone. These providers were not live-verified in this run; plugin-only auth entries can still appear before a key is configured.
 
 ## Providers
 
-| Provider ID | Display name | Source | Auth | Free class | Privacy |
-|---|---|---|---|---|---|
-| `free-kilo` | `OPENFREE Kilo Free` | Kilo public gateway | none | free-tier | may train |
-| `free-openrouter` | `OPENFREE OpenRouter Free` | OpenRouter zero-price models | OpenCode `openrouter` connection or `OPENROUTER_API_KEY` | zero-price | unknown |
-| `free-ollama-cloud` | `OPENFREE Ollama Cloud` | Ollama Cloud catalog | OpenCode `ollama-cloud` connection or `OLLAMA_API_KEY` | free-tier | unknown |
+| Provider ID | Display name | Source | Auth | Free class | Privacy | Verification (2026-11-06) |
+|---|---|---|---|---|---|---|
+| `free-kilo` | `OPENFREE Kilo Free` | Kilo public gateway | none | free-tier | may train | 12/12 OK |
+| `free-openrouter` | `OPENFREE OpenRouter Free` | OpenRouter zero-price models | OpenCode `openrouter` connection or `OPENROUTER_API_KEY` | zero-price | unknown | 12/14 OK; two Gemma upstream failures |
+| `free-ollama-cloud` | `OPENFREE Ollama Cloud` | Ollama Cloud catalog | OpenCode `ollama-cloud` connection or `OLLAMA_API_KEY` | free-tier candidates | unknown | 7/25 OK; 18 plan-restricted |
 
 OpenCode Zen free models are intentionally not duplicated. Use the native `opencode/<model-id>` provider directly.
 
@@ -45,23 +61,23 @@ These adapters are available in `0.2.0`. Live verification depends on the provid
 
 | Provider ID | Display name | Free class | Auth | Verification |
 |---|---|---|---|---|
-| `free-gemini` | `OPENFREE Gemini` | free-tier | `GEMINI_API_KEY` or `google` connection | Live-verified with Gemini 3.8/3.6 Flash |
-| `free-groq` | `OPENFREE Groq` | free-tier | `GROQ_API_KEY` or `groq` connection | Live-verified; tool-less due to TPM |
-| `free-mistral` | `OPENFREE Mistral` | free-tier | `MISTRAL_API_KEY` or `mistral` connection | Fixture-tested |
-| `free-cohere` | `OPENFREE Cohere` | free-tier | `COHERE_API_KEY` or `cohere` connection | Fixture-tested |
-| `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID | Discovery-only; inference blocked by protocol mismatch |
-| `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` or `sambanova` connection | Catalog verified; inference requires a SambaNova payment method |
+| `free-gemini` | `OPENFREE Gemini` | free-tier | `GEMINI_API_KEY` or `google` connection | 4/7 OK; quota, rate-limit, and stream failures |
+| `free-groq` | `OPENFREE Groq` | free-tier | `GROQ_API_KEY` or `groq` connection | 3/3 OK; registered tool-less due to TPM |
+| `free-mistral` | `OPENFREE Mistral` | free-tier | `MISTRAL_API_KEY` or `mistral` connection | Fixture-tested; no credential/live check |
+| `free-cohere` | `OPENFREE Cohere` | free-tier | `COHERE_API_KEY` or `cohere` connection | Fixture-tested; no credential/live check |
+| `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID | 2/6 work for plain text; not agent-compatible |
+| `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` or `sambanova` connection | Stored connection gone; not registered/live-verified in this run |
 | `free-zai` | `OPENFREE Z.ai` | free-tier | `ZHIPU_API_KEY` or `zai` connection | Live-verified `glm-4.5-flash` and `glm-4.7-flash`; `glm-4.6v-flash` excluded due tool-loop instability |
-| `free-nvidia` | `OPENFREE NVIDIA NIM` | trial-credit | `NVIDIA_API_KEY` or `nvidia` connection | Fixture-tested |
-| `free-alibaba` | `OPENFREE Alibaba Model Studio` | trial-credit | `DASHSCOPE_API_KEY` or `alibaba` connection | Fixture-tested |
-| `free-nebius` | `OPENFREE Nebius` | trial-credit | `NEBIUS_API_KEY` or `nebius` connection | Fixture-tested |
-| `free-bazaarlink` | `OPENFREE BazaarLink` | free-tier | `BAZAARLINK_API_KEY` | Fixture-tested |
-| `free-byteplus` | `OPENFREE BytePlus` | trial-credit | `BYTEPLUS_API_KEY` | Fixture-tested |
-| `free-kimchi` | `OPENFREE Kimchi` | free-tier | `KIMCHI_API_KEY` | Fixture-tested |
+| `free-nvidia` | `OPENFREE NVIDIA NIM` | trial-credit | `NVIDIA_API_KEY` or `nvidia` connection | Fixture-tested; no credential/live check |
+| `free-alibaba` | `OPENFREE Alibaba Model Studio` | trial-credit | `DASHSCOPE_API_KEY` or `alibaba` connection | Fixture-tested; no credential/live check |
+| `free-nebius` | `OPENFREE Nebius` | trial-credit | `NEBIUS_API_KEY` or `nebius` connection | Fixture-tested; no credential/live check |
+| `free-bazaarlink` | `OPENFREE BazaarLink` | free-tier | `BAZAARLINK_API_KEY` or plugin connection | Fixture-tested; no credential/live check |
+| `free-byteplus` | `OPENFREE BytePlus` | trial-credit | `BYTEPLUS_API_KEY` or plugin connection | Fixture-tested; no credential/live check |
+| `free-kimchi` | `OPENFREE Kimchi` | free-tier | `KIMCHI_API_KEY` or plugin connection | Fixture-tested; no credential/live check |
 
 Trial-credit providers require `allowTrialCredits: true`. Experimental adapters are enabled by default but skip immediately when no credential is present. Disable providers you do not use to reduce startup work.
 
-Groq free-tier models are registered tool-less because the 8K TPM limit cannot fit OpenCode's tool schemas. They work with the `general` or `explorer` agent, or in a clean project; the full `build` agent prompt may exceed the limit.
+Groq free-tier models are registered tool-less because of the 8K TPM limit. Prefer a small prompt with `general`/`explorer` or a clean project; the full `build` prompt may exceed the limit. Current OpenCode agents can expose tools regardless of `capabilities.tools = false`, so this flag alone does not guarantee a tool-free request.
 
 ## Install
 
@@ -114,7 +130,7 @@ Alternatively, set the environment variable and restart:
 $env:BAZAARLINK_API_KEY = "..."
 ```
 
-The plugin checks the stored connection first, then the environment variable. A key entered through the UI persists across restarts.
+The plugin checks the environment variable first, then the stored connection. A key entered through the UI persists across restarts.
 
 ### OpenRouter
 
@@ -180,7 +196,11 @@ https://dash.cloudflare.com/<ACCOUNT_ID>
 5. Optionally set an expiration and IP restriction.
 6. Create the token and copy it once.
 
-No Zone permission is required for model discovery. Cloudflare inference is currently blocked by a protocol mismatch between OpenCode’s message format and Cloudflare’s OpenAI-compatible endpoint, so Cloudflare models are discovery-only in `0.2.0`.
+No Zone permission is required for model discovery. Cloudflare is **text-only in practice, not agent-compatible**. Plain-text requests worked with `@cf/mistralai/mistral-small-3.1-24b-instruct` and `@cf/zai-org/glm-4.7-flash` in the 2026-11-06 check.
+
+The plugin uses `@opencode/ai/providers/cloudflare-workers-ai` and marks models `tools: false`, but current OpenCode agents still expose tools regardless of `capabilities.tools = false`. Tool calls fail with `Type mismatch of '/messages/0/content', 'array' not in 'string'`. Do not use Cloudflare for agent workflows.
+
+Other observed results: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` tends to call tools and then fails; `@cf/deepseek-ai/deepseek-r1-distill-qwen-32b` responds off-prompt; `@cf/qwen/qwen2.5-coder-32b-instruct` returns a stream error; `@cf/moonshotai/kimi-k2.6` requires a paid Workers plan.
 
 #### Configure the plugin
 
@@ -276,6 +296,30 @@ Broad mode enables training-enabled and unknown-privacy providers:
 
 Strict mode may hide every model from a provider. That is intentional.
 
+### Optional Ollama Cloud allowlist
+
+The catalog does not expose plan entitlement, so the plugin lists models that may not be included in your free usage. These seven exact IDs worked on the tested free plan on 2026-11-06:
+
+```json
+{
+  "providers": {
+    "ollamaCloud": {
+      "allowlist": [
+        "beam",
+        "gemma4:31b",
+        "gpt-oss:120b",
+        "gpt-oss:20b",
+        "nemotron-3-nano:30b",
+        "nemotron-3-super",
+        "nemotron-3-ultra"
+      ]
+    }
+  }
+}
+```
+
+`providers.ollamaCloud.allowlist` and `denylist` accept exact model IDs. An absent or empty list applies no filtering for that list; denylist wins when an ID is in both. Privacy policy still applies (`allowUnknownPrivacy: true` is needed for Ollama Cloud). See [configuration](docs/configuration.md).
+
 All other providers are enabled by default and skip immediately when no credential is present. Cloudflare additionally needs an account ID:
 
 ```json
@@ -305,7 +349,7 @@ All other providers are enabled by default and skip immediately when no credenti
 - Ollama Cloud free-tier privacy terms are labeled `unknown`.
 - Gemini free-tier data may be used for product improvement; labeled `may-train`.
 - Groq free-tier inference is labeled no-training by default.
-- Cloudflare is discovery-only; no prompts are sent to it by this plugin yet.
+- Cloudflare supports limited plain-text inference; selecting it for inference sends prompts to Cloudflare. It is not agent-compatible.
 - Other experimental providers carry per-provider labels; run `/free-models privacy`.
 - Discovery sends no prompts, repository contents, file paths, or session titles.
 - No telemetry and no prompt logging.
@@ -334,7 +378,29 @@ npm run check
 npm run pack:check
 ```
 
-The test suite uses fixtures and makes no network requests. Current suite: **45 tests**.
+The test suite uses fixtures and makes no network requests. Verified suite: **54/54 passing** (2026-11-06).
+
+## Scripts
+
+Run from this checkout on native Windows with PowerShell:
+
+| Command | Purpose |
+|---|---|
+| `npm test` | Run offline tests |
+| `npm run check` | Syntax checks and offline tests |
+| `npm run pack:check` | Preview package contents |
+| `npm run sync:workspace` | Copy runtime files to the configured workspace `.opencode/plugins/free-models`; replaces its `src` directory |
+| `npm run smoke` | Run live model smoke tests through `opencode.cmd`; consumes provider quota |
+
+Preview a workspace sync without writing: `npm run sync:workspace -- -DryRun`. See [configuration](docs/configuration.md#scripts) for destination overrides.
+
+```powershell
+npm run smoke -- -All -OutFile smoke.jsonl -SummaryFile smoke-summary.json -TimeoutSec 120
+# Or use a file containing one provider/model ID per line:
+npm run smoke -- -ModelsFile models.txt -OutFile smoke.jsonl -SummaryFile smoke-summary.json
+```
+
+Choose `-All` or `-ModelsFile`; `-OutFile` and `-SummaryFile` are required and overwrite their outputs. `-TimeoutSec` defaults to 60 seconds per model. Smoke results test a short `general` agent prompt, not complete agent compatibility.
 
 ## Repository layout
 

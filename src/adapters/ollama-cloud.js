@@ -100,9 +100,12 @@ export async function discoverOllamaCloud(config) {
     if (model.id && !byId.has(model.id)) byId.set(model.id, model)
   }
 
+  const allowlist = new Set(Array.isArray(providerConfig.allowlist) ? providerConfig.allowlist : [])
+  const denylist = new Set(Array.isArray(providerConfig.denylist) ? providerConfig.denylist : [])
   const models = [...byId.values()]
     .map((model) => normalizeOllamaCloudModel(model, tagsById.get(model.slug || model.id)))
     .filter(Boolean)
+    .filter((model) => (!allowlist.size || allowlist.has(model.id)) && !denylist.has(model.id))
 
   return {
     providerId: "free-ollama-cloud",

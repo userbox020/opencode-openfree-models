@@ -5,7 +5,8 @@ import plugin, { __test } from "../src/index.js"
 import { normalizeKiloModel } from "../src/adapters/kilo.js"
 import { normalizeOllamaCloudModel } from "../src/adapters/ollama-cloud.js"
 import { normalizeOpenRouterModel } from "../src/adapters/openrouter.js"
-import { mergeConfig } from "../src/config.js"
+import { credentialFingerprint } from "../src/cache.js"
+import { mergeConfig, PROVIDER_KEYS } from "../src/config.js"
 import { filterModels } from "../src/policy.js"
 
 function jsonResponse(value) {
@@ -269,7 +270,7 @@ test("registers Kilo provider and command when training is allowed", async () =>
   assert.equal(providers[0].models[0].id, "kilo-auto/free")
   assert.equal(commands.length, 1)
   assert.equal(commands[0].name, "free-models")
-  assert.ok(storage.get("free-models:inventory:v15"))
+  assert.ok(storage.get("free-models:inventory:v17"))
 })
 
 test("does not register a provider when policy blocks every model", async () => {
@@ -456,7 +457,7 @@ test("resolves Cloudflare Workers AI connection and account ID", async () => {
   delete process.env.CLOUDFLARE_API_TOKEN
 
   try {
-    const { ctx, providers } = createContext({
+    const { ctx, providers, storage } = createContext({
       options: {
         providers: {
           kilo: { enabled: false },
@@ -494,10 +495,72 @@ test("resolves Cloudflare Workers AI connection and account ID", async () => {
     assert.equal(providers[0].info.package, "@opencode/ai/providers/cloudflare-workers-ai")
     assert.equal(providers[0].info.settings.accountId, "acct-123")
     assert.equal(providers[0].models.length, 1)
+    const cachedProvider = storage.get("free-models:inventory:v17").providers
+      .find((provider) => provider.providerId === "free-cloudflare")
+    assert.equal(cachedProvider.package, "@opencode/ai/providers/cloudflare-workers-ai")
+    assert.equal(cachedProvider.settings.accountId, "acct-123")
   } finally {
     if (previous === undefined) delete process.env.CLOUDFLARE_API_TOKEN
     else process.env.CLOUDFLARE_API_TOKEN = previous
   }
+})
+
+test("preserves Cloudflare provider metadata when registering from cache", async () => {
+  let fetchCalls = 0
+  const { ctx, providers, storage } = createContext({
+    options: {
+      providers: Object.fromEntries(PROVIDER_KEYS.map((key) => [
+        key,
+        { enabled: key === "cloudflare", env: "" },
+      ])),
+    },
+    connections: {
+      "cloudflare-workers-ai": {
+        type: "key",
+        key: "test-key",
+        configuration: { accountId: "acct-123" },
+      },
+    },
+    fetchImpl: async () => {
+      fetchCalls += 1
+      return jsonResponse({})
+    },
+  })
+  storage.set("free-models:inventory:v17", {
+    version: 1,
+    fetchedAt: Date.now(),
+    credentialFingerprint: credentialFingerprint({
+      cloudflare: { key: "test-key", source: "cloudflare-workers-ai" },
+      cloudflareAccountId: "acct-123",
+    }),
+    providers: [{
+      providerId: "free-cloudflare",
+      name: "OPENFREE Cloudflare Workers AI",
+      package: "@opencode/ai/providers/cloudflare-workers-ai",
+      settings: { accountId: "acct-123" },
+      integration: { id: "cloudflare-workers-ai", register: false },
+      allModels: [{
+        id: "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        name: "Llama 3.3 70B",
+        freeClass: "free-tier",
+        privacy: { trainsOnPrompts: false },
+        tools: true,
+        context: 24000,
+        output: 4096,
+      }],
+      diagnostics: [],
+    }],
+    diagnostics: [],
+  })
+
+  await plugin.setup(ctx)
+
+  assert.equal(fetchCalls, 0)
+  const provider = providers.find((entry) => entry.info.id === "free-cloudflare")
+  assert.ok(provider)
+  assert.equal(provider.info.package, "@opencode/ai/providers/cloudflare-workers-ai")
+  assert.equal(provider.info.settings.accountId, "acct-123")
+  assert.equal(provider.models.length, 1)
 })
 
 test("Ollama Cloud adapter skips without an API key", async () => {

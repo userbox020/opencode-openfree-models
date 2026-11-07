@@ -1,4 +1,4 @@
-export const CACHE_KEY = "free-models:inventory:v15"
+export const CACHE_KEY = "free-models:inventory:v17"
 
 export function credentialFingerprint(credentials = {}) {
   const parts = []
@@ -33,6 +33,8 @@ export async function writeCache(ctx, inventory, fingerprint = "") {
         providerId: provider.providerId,
         name: provider.name,
         baseURL: provider.baseURL,
+        package: provider.package,
+        settings: provider.settings,
         integration: provider.integration,
         allModels: provider.allModels,
         diagnostics: provider.diagnostics || [],

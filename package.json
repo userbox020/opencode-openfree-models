@@ -19,7 +19,9 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "check": "node --check index.js && node --check src/index.js && node --test test/*.test.mjs",
-    "pack:check": "npm pack --dry-run"
+    "pack:check": "npm pack --dry-run",
+    "sync:workspace": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sync-workspace.ps1",
+    "smoke": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/smoke-models.ps1"
   },
   "keywords": [
     "opencode",

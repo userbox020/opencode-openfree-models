@@ -30,7 +30,7 @@
 
 ## 0.3.0
 
-- Live verification for experimental providers with real credentials
+- Extend live verification to remaining providers/accounts; the 2026-11-06 check covered 7 providers, with documented quota, plan, and protocol limitations
 - Per-provider cooldown state
 - `doctor` rate-limit diagnostics
 - Credential-aware cache invalidation
