@@ -317,10 +317,71 @@ test("resolves the stored OpenRouter connection and registers free models", asyn
     assert.equal(providers[0].info.integrationID, "openrouter")
     assert.equal(providers[0].models.length, 1)
     assert.equal(providers[0].models[0].id, "cohere/north-mini-code:free")
-    assert.equal(integrations.length, 0)
+    assert.equal(integrations.some((entry) => entry.integrationID === "openrouter"), false)
   } finally {
     if (previous === undefined) delete process.env.OPENROUTER_API_KEY
     else process.env.OPENROUTER_API_KEY = previous
+  }
+})
+
+test("registers a plugin-only integration before its credential exists", async () => {
+  const previous = process.env.BAZAARLINK_API_KEY
+  delete process.env.BAZAARLINK_API_KEY
+
+  try {
+    const { ctx, providers, integrations } = createContext({
+      options: {
+        providers: {
+          bazaarlink: { enabled: true, env: "BAZAARLINK_API_KEY" },
+        },
+      },
+    })
+
+    await plugin.setup(ctx)
+
+    assert.equal(providers.length, 0)
+    const methods = integrations
+      .filter((entry) => entry.integrationID === "free-bazaarlink")
+      .map((entry) => entry.method.type)
+    assert.deepEqual(methods, ["env", "key"])
+  } finally {
+    if (previous === undefined) delete process.env.BAZAARLINK_API_KEY
+    else process.env.BAZAARLINK_API_KEY = previous
+  }
+})
+
+test("resolves a key connected to the plugin-only BazaarLink integration", async () => {
+  const previous = process.env.BAZAARLINK_API_KEY
+  delete process.env.BAZAARLINK_API_KEY
+
+  try {
+    const { ctx, providers } = createContext({
+      options: {
+        providers: {
+          kilo: { enabled: false },
+          bazaarlink: { enabled: true, env: "BAZAARLINK_API_KEY" },
+        },
+        policy: { allowUnknownPrivacy: true },
+      },
+      connections: {
+        "free-bazaarlink": { type: "key", key: "test-key" },
+      },
+      fetchImpl: async (url, options) => {
+        assert.equal(url, "https://bazaarlink.ai/api/v1/models")
+        assert.equal(options.headers.authorization, "Bearer test-key")
+        return jsonResponse({ data: [{ id: "auto:free" }] })
+      },
+    })
+
+    await plugin.setup(ctx)
+
+    const provider = providers.find((entry) => entry.info.id === "free-bazaarlink")
+    assert.ok(provider)
+    assert.equal(provider.info.integrationID, "free-bazaarlink")
+    assert.deepEqual(provider.models.map((model) => model.id), ["auto:free"])
+  } finally {
+    if (previous === undefined) delete process.env.BAZAARLINK_API_KEY
+    else process.env.BAZAARLINK_API_KEY = previous
   }
 })
 

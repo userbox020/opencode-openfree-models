@@ -37,7 +37,6 @@ async function loadInventory(ctx, config) {
 
 async function registerIntegrations(ctx, inventory) {
   const integrations = inventory.providers
-    .filter((provider) => provider.models.length > 0)
     .map((provider) => provider.integration)
     .filter((integration) => integration?.id && integration?.env && integration.register !== false)
 
@@ -59,6 +58,13 @@ async function registerIntegrations(ctx, inventory) {
           method: {
             type: "env",
             names: [integration.env],
+          },
+        })
+        editor.method.update({
+          integrationID: integration.id,
+          method: {
+            type: "key",
+            label: "Manually enter API Key",
           },
         })
       } catch {

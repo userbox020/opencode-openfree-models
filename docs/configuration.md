@@ -156,6 +156,8 @@ The experimental adapters use the same `providers` map:
 | `byteplus` | `free-byteplus` | `BYTEPLUS_API_KEY` | `trial-credit`; account/region-specific credits |
 | `kimchi` | `free-kimchi` | `KIMCHI_API_KEY` | Free-tier terms apply |
 
+`free-bazaarlink`, `free-byteplus`, and `free-kimchi` are plugin-only auth integrations. They are registered at startup even when no credential exists, so they can be connected with **Manually enter API Key** in the providers UI. A stored connection takes priority over the environment variable and persists across restarts.
+
 ### Cloudflare Workers AI
 
 ```json

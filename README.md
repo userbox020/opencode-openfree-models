@@ -98,6 +98,24 @@ Restart OpenCode or the service and start a new session.
 
 No account or API key required for the public free pool.
 
+### BazaarLink, BytePlus, and Kimchi
+
+These providers have no built-in OpenCode integration. The plugin registers their auth integrations (`free-bazaarlink`, `free-byteplus`, `free-kimchi`) during startup, so they appear in the providers list even before a key exists.
+
+After installing the plugin and restarting OpenCode:
+
+1. Open the providers list.
+2. Select **OPENFREE BazaarLink**, **OPENFREE BytePlus**, or **OPENFREE Kimchi**.
+3. Choose **Manually enter API Key** and paste the key.
+
+Alternatively, set the environment variable and restart:
+
+```powershell
+$env:BAZAARLINK_API_KEY = "..."
+```
+
+The plugin checks the stored connection first, then the environment variable. A key entered through the UI persists across restarts.
+
 ### OpenRouter
 
 Use an existing OpenCode connection:
