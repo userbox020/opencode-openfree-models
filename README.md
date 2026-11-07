@@ -81,6 +81,10 @@ Groq free-tier models are registered tool-less because of the 8K TPM limit. Pref
 
 ## Install
 
+```powershell
+opencode plugin add opencode-openfree-models@0.2.0
+```
+
 From this checkout:
 
 ```powershell
@@ -93,7 +97,7 @@ Or add an explicit entry:
 {
   "plugins": [
     {
-      "package": "./opencode-openfree-models",
+      "package": "opencode-openfree-models@0.2.0",
       "options": {}
     }
   ]

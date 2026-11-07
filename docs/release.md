@@ -28,11 +28,19 @@ Do not run live checks in pull-request CI.
 
 ## Distribution
 
-This project is used from a local checkout or the public repository. npm publication is optional and not required for local use.
+The plugin can be installed from npm, the public repository, or a local checkout.
+
+```powershell
+opencode plugin add opencode-openfree-models@0.2.0
+```
+
+Local checkout:
 
 ```powershell
 opencode plugin add ./opencode-openfree-models
 ```
+
+npm publishing requires a granular access token with bypass 2FA enabled. Do not commit `.npmrc` or paste tokens into tracked files.
 
 ## GitHub release
 
