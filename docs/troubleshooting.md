@@ -53,7 +53,7 @@ On 2026-11-06, `gemini-3.1-pro-preview` hit the free-tier **daily** quota. Repea
 
 ## Stale model list
 
-The inventory is cached under `free-models:inventory:v17`. Cached providers preserve `package` and `settings`, including Cloudflare's `@opencode/ai/providers/cloudflare-workers-ai` package. Try:
+The inventory is cached under `free-models:inventory:v18`. Cached providers preserve `package` and `settings`, including Cloudflare's `@opencode/ai/providers/cloudflare-workers-ai` package. Try:
 
 ```text
 /free-models refresh
@@ -114,17 +114,17 @@ Find the account ID at:
 - Workers & Pages → Account Details → Account ID
 - Dashboard URL: `https://dash.cloudflare.com/<ACCOUNT_ID>`
 
-## Cloudflare tool-call failure: `Bad input: content array`
+## Cloudflare tool calls
 
-Cloudflare is **text-only in practice, not agent-compatible**. Plain-text requests worked with `@cf/mistralai/mistral-small-3.1-24b-instruct` and `@cf/zai-org/glm-4.7-flash` on 2026-11-06, but tool calls still fail with:
+Cloudflare's OpenAI-compatible endpoint can reject array-form message content with:
 
 ```text
 Type mismatch of '/messages/0/content', 'array' not in 'string'
 ```
 
-This is a message-format incompatibility, not an account-ID or token-policy problem. The plugin uses `@opencode/ai/providers/cloudflare-workers-ai` and marks Cloudflare models `tools: false`, but current OpenCode agents expose tools regardless of `capabilities.tools = false`. The flag is not a workaround; use another provider for agent workflows.
+The plugin registers a provider-scoped `ctx.session.hook("http.request")` that flattens array/null content to strings while preserving `tool_calls`, tool-result IDs, roles, and user images. Tool round-trips were verified on `@cf/meta/llama-3.3-70b-instruct-fp8-fast` and `@cf/zai-org/glm-4.7-flash` on 2026-11-08.
 
-Other observed Cloudflare failures are model-specific: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` tends to call tools and then fails, `@cf/deepseek-ai/deepseek-r1-distill-qwen-32b` responds off-prompt, `@cf/qwen/qwen2.5-coder-32b-instruct` returns a stream error, and `@cf/moonshotai/kimi-k2.6` requires a paid Workers plan.
+If the error persists, update the plugin and refresh the inventory (cache `v18`). Model-specific failures remain: `@cf/deepseek-ai/deepseek-r1-distill-qwen-32b` responds off-prompt, `@cf/qwen/qwen2.5-coder-32b-instruct` returns a stream error, and `@cf/moonshotai/kimi-k2.6` requires a paid Workers plan.
 
 ## SambaNova says a payment method is required
 

@@ -5,6 +5,7 @@ import { discoverAll } from "./discovery.js"
 import { toModelInfo, toProviderInfo } from "./opencode.js"
 import { applyPolicy } from "./policy.js"
 import { registerCommands } from "./commands.js"
+import { normalizeWireMessages } from "./cloudflare-wire.js"
 
 async function loadInventory(ctx, config) {
   const fingerprint = credentialFingerprint(config.credentials)
@@ -160,7 +161,35 @@ const plugin = {
     await registerModelFilter(ctx, state)
     await registerCommands(ctx, state, config)
 
-    return async () => {}
+    const registrations = []
+    if (typeof ctx.session?.hook === "function") {
+      const registration = await ctx.session.hook(
+        "http.request",
+        async (event) => {
+          const request = event.request
+          if (!request || request.method !== "POST") return
+          try {
+            if (!new URL(request.url).pathname.endsWith("/chat/completions")) return
+            const body = await request.clone().json()
+            if (!body || !Array.isArray(body.messages)) return
+            const headers = new Headers(request.headers)
+            headers.delete("content-length")
+            event.request = new Request(request, {
+              headers,
+              body: JSON.stringify({ ...body, messages: normalizeWireMessages(body.messages) }),
+            })
+          } catch {
+            // Leave the original request untouched if parsing or rewriting fails.
+          }
+        },
+        { providerID: "free-cloudflare" },
+      )
+      registrations.push(registration)
+    }
+
+    return async () => {
+      for (const registration of registrations) await registration?.dispose?.()
+    }
   },
 }
 

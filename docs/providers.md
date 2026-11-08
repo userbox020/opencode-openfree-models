@@ -81,7 +81,7 @@ These adapters are fixture-tested but not live-verified for every account or reg
 | `free-groq` | `OPENFREE Groq` | free-tier | `GROQ_API_KEY` / `groq` connection | 3/3 OK; registered tool-less due to TPM. Prefer small prompts with `general`/`explorer` or a clean project; the flag does not ensure agents omit tools. |
 | `free-mistral` | `OPENFREE Mistral` | free-tier | `MISTRAL_API_KEY` / `mistral` connection | Free mode may train |
 | `free-cohere` | `OPENFREE Cohere` | free-tier | `COHERE_API_KEY` / `cohere` connection | Trial/evaluation limits |
-| `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID | 2/6 work for plain text; not agent-compatible; details below |
+| `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID | 2/6 text OK; tool round-trip verified on llama-3.3 and glm-4.7-flash; details below |
 | `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` / `sambanova` connection | Stored connection gone; not registered/live-tested in this run |
 | `free-zai` | `OPENFREE Z.ai` | free-tier | `ZHIPU_API_KEY` / `zai` connection | Catalog omits free flash models; plugin adds static entries. `glm-4.5-flash` and `glm-4.7-flash` live-verified. `glm-4.6v-flash` excluded due tool-loop instability. |
 | `free-nvidia` | `OPENFREE NVIDIA NIM` | trial-credit | `NVIDIA_API_KEY` / `nvidia` connection | Requires `allowTrialCredits` |
@@ -104,16 +104,18 @@ Free-tier quotas are project/model-specific. The 2026-11-06 results were:
 
 ### `free-cloudflare`
 
-Uses `@opencode/ai/providers/cloudflare-workers-ai`; cached provider `package` and `settings` are preserved. Models are marked `tools: false`, but current OpenCode agents expose tools regardless of `capabilities.tools = false`. Tool calls still fail with `Type mismatch of '/messages/0/content', 'array' not in 'string'`. **Text-only in practice; not agent-compatible.**
+Uses `@opencode/ai/providers/cloudflare-workers-ai`; cached provider `package` and `settings` are preserved. A provider-scoped `ctx.session.hook("http.request")` flattens array/null message content to strings while preserving `tool_calls`, tool-result `tool_call_id`, roles, and user images. This fixes the previous content-array error.
 
-| Model | Live result (2026-11-06) |
+| Model | Live result (2026-11-08) |
 |---|---|
-| `@cf/mistralai/mistral-small-3.1-24b-instruct` | Plain text works |
-| `@cf/zai-org/glm-4.7-flash` | Plain text works |
-| `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | Tends to call tools, then fails |
+| `@cf/meta/llama-3.3-70b-instruct-fp8-fast` | Tool round-trip OK |
+| `@cf/zai-org/glm-4.7-flash` | Tool round-trip OK |
+| `@cf/mistralai/mistral-small-3.1-24b-instruct` | Plain text OK |
 | `@cf/deepseek-ai/deepseek-r1-distill-qwen-32b` | Responds off-prompt |
 | `@cf/qwen/qwen2.5-coder-32b-instruct` | Stream error |
 | `@cf/moonshotai/kimi-k2.6` | Requires a paid Workers plan |
+
+Model capability and plan entitlement still vary; the hook fixes the wire format only.
 
 ## Adding a provider
 

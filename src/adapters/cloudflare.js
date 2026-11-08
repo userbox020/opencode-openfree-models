@@ -21,7 +21,6 @@ const spec = {
   allowlist: ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/qwen/qwen2.5-coder-32b-instruct", "@cf/mistralai/mistral-small-3.1-24b-instruct", "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b", "@cf/moonshotai/kimi-k2.5", "@cf/moonshotai/kimi-k2.6", "@cf/zai-org/glm-4.7-flash"],
   defaultContext: 131072,
   defaultOutput: 32768,
-  tools: false,
   pick: (payload) => payload.result ?? payload.data ?? payload.models,
   normalize(model, spec) {
     const properties = Object.fromEntries(

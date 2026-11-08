@@ -25,7 +25,7 @@ OPENFREE Kimchi
 
 The plugin does not impersonate clients, rotate accounts, bypass quotas, run a local gateway, or fall back to paid models.
 
-**Status:** `0.2.0` · **54/54 offline tests passing** · **69 registered models across 7 providers** in the 2026-11-06 live check · Cloudflare text-only, not agent-compatible.
+**Status:** `0.2.0` · **97/97 offline tests passing** · **69 registered models across 7 providers** in the 2026-11-06 live check · Cloudflare tool calls verified on llama-3.3 and glm-4.7-flash.
 
 ## Live verification
 
@@ -38,7 +38,7 @@ Snapshot from **2026-11-06**, running OpenCode natively on Windows (no Docker/WS
 | Z.ai | **2/2 OK**: `glm-4.5-flash`, `glm-4.7-flash` |
 | OpenRouter | **12/14 OK**; `google/gemma-4-26b-a4b-it:free` and `google/gemma-4-31b-it:free` return upstream errors after about 97 seconds |
 | Gemini | **4/7 OK**: `gemini-3-flash-preview`, `gemini-3.1-flash-lite`, `gemini-3.5-flash-lite`, `gemini-3.6-flash`; `gemini-3.1-pro-preview` hits the daily free-tier quota, `gemini-3.8-flash` is rate-limited/times out, and `gemma-4-31b-it` ends without `finish_reason` |
-| Cloudflare | **2/6 work for plain text**: `@cf/mistralai/mistral-small-3.1-24b-instruct`, `@cf/zai-org/glm-4.7-flash`; other models fail, respond off-prompt, or require a paid plan. Not agent-compatible; see below |
+| Cloudflare | **2/6 text OK**: `@cf/mistralai/mistral-small-3.1-24b-instruct`, `@cf/zai-org/glm-4.7-flash`; tool round-trip verified on `@cf/meta/llama-3.3-70b-instruct-fp8-fast` and `@cf/zai-org/glm-4.7-flash`. Other models fail, respond off-prompt, or require a paid plan |
 | Ollama Cloud | **7/25 OK** on the current free plan; the other 18 return “not included in your free usage.” Use the optional allowlist below |
 
 Mistral, Cohere, NVIDIA, Alibaba, Nebius, BazaarLink, BytePlus, and Kimchi had no credentials and no registered models in this check. SambaNova's stored connection is gone. These providers were not live-verified in this run; plugin-only auth entries can still appear before a key is configured.
@@ -65,7 +65,7 @@ These adapters are available in `0.2.0`. Live verification depends on the provid
 | `free-groq` | `OPENFREE Groq` | free-tier | `GROQ_API_KEY` or `groq` connection | 3/3 OK; registered tool-less due to TPM |
 | `free-mistral` | `OPENFREE Mistral` | free-tier | `MISTRAL_API_KEY` or `mistral` connection | Fixture-tested; no credential/live check |
 | `free-cohere` | `OPENFREE Cohere` | free-tier | `COHERE_API_KEY` or `cohere` connection | Fixture-tested; no credential/live check |
-| `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID | 2/6 work for plain text; not agent-compatible |
+| `free-cloudflare` | `OPENFREE Cloudflare` | free-tier | `CLOUDFLARE_API_TOKEN` + account ID | 2/6 text OK; tool round-trip verified on llama-3.3 and glm-4.7-flash |
 | `free-sambanova` | `OPENFREE SambaNova` | free-tier | `SAMBANOVA_API_KEY` or `sambanova` connection | Stored connection gone; not registered/live-verified in this run |
 | `free-zai` | `OPENFREE Z.ai` | free-tier | `ZHIPU_API_KEY` or `zai` connection | Live-verified `glm-4.5-flash` and `glm-4.7-flash`; `glm-4.6v-flash` excluded due tool-loop instability |
 | `free-nvidia` | `OPENFREE NVIDIA NIM` | trial-credit | `NVIDIA_API_KEY` or `nvidia` connection | Fixture-tested; no credential/live check |
@@ -204,11 +204,18 @@ https://dash.cloudflare.com/<ACCOUNT_ID>
 5. Optionally set an expiration and IP restriction.
 6. Create the token and copy it once.
 
-No Zone permission is required for model discovery. Cloudflare is **text-only in practice, not agent-compatible**. Plain-text requests worked with `@cf/mistralai/mistral-small-3.1-24b-instruct` and `@cf/zai-org/glm-4.7-flash` in the 2026-11-06 check.
+No Zone permission is required for model discovery. Cloudflare tool calls are supported through a provider-scoped `ctx.session.hook("http.request")` that flattens array/null message content to strings while preserving `tool_calls`, tool-result IDs, roles, and user images.
 
-The plugin uses `@opencode/ai/providers/cloudflare-workers-ai` and marks models `tools: false`, but current OpenCode agents still expose tools regardless of `capabilities.tools = false`. Tool calls fail with `Type mismatch of '/messages/0/content', 'array' not in 'string'`. Do not use Cloudflare for agent workflows.
+Verified on 2026-11-08:
 
-Other observed results: `@cf/meta/llama-3.3-70b-instruct-fp8-fast` tends to call tools and then fails; `@cf/deepseek-ai/deepseek-r1-distill-qwen-32b` responds off-prompt; `@cf/qwen/qwen2.5-coder-32b-instruct` returns a stream error; `@cf/moonshotai/kimi-k2.6` requires a paid Workers plan.
+- `@cf/meta/llama-3.3-70b-instruct-fp8-fast` — tool round-trip OK.
+- `@cf/zai-org/glm-4.7-flash` — tool round-trip OK.
+- `@cf/mistralai/mistral-small-3.1-24b-instruct` — plain text OK.
+- `@cf/deepseek-ai/deepseek-r1-distill-qwen-32b` — responds off-prompt.
+- `@cf/qwen/qwen2.5-coder-32b-instruct` — stream error.
+- `@cf/moonshotai/kimi-k2.6` — requires a paid Workers plan.
+
+The hook fixes the wire-format mismatch, not model quality or plan entitlement. Model capability still varies.
 
 #### Configure the plugin
 
@@ -357,7 +364,7 @@ All other providers are enabled by default and skip immediately when no credenti
 - Ollama Cloud free-tier privacy terms are labeled `unknown`.
 - Gemini free-tier data may be used for product improvement; labeled `may-train`.
 - Groq free-tier inference is labeled no-training by default.
-- Cloudflare supports limited plain-text inference; selecting it for inference sends prompts to Cloudflare. It is not agent-compatible.
+- Cloudflare supports plain-text and tool-call inference; prompts are sent to Cloudflare. Model capability and plan entitlement vary.
 - Other experimental providers carry per-provider labels; run `/free-models privacy`.
 - Discovery sends no prompts, repository contents, file paths, or session titles.
 - No telemetry and no prompt logging.
@@ -386,7 +393,7 @@ npm run check
 npm run pack:check
 ```
 
-The test suite uses fixtures and makes no network requests. Verified suite: **54/54 passing** (2026-11-06).
+The test suite uses fixtures and makes no network requests. Verified suite: **97/97 passing** (2026-11-08).
 
 ## Scripts
 

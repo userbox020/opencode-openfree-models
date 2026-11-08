@@ -18,7 +18,7 @@ test("normalizes Cloudflare free-tier models and defaults", () => {
     assert.equal(model.id, item.name)
     assert.equal(model.context, item.name.includes("llama-3.3") ? 24000 : 131072)
     assert.equal(model.output, 32768)
-    assert.equal(model.tools, false)
+    assert.equal(model.tools, true)
     assert.equal(model.freeClass, "free-tier")
     assert.equal(model.privacy.trainsOnPrompts, false)
   }

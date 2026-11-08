@@ -25,6 +25,7 @@ function createContext({
   const commands = []
   const integrations = []
   const synthetic = []
+  const hooks = []
   const storage = new Map()
 
   const providerRecords = () =>
@@ -108,6 +109,10 @@ function createContext({
     },
     session: {
       synthetic: async (input) => synthetic.push(input),
+      hook: async (name, callback, options) => {
+        hooks.push({ name, callback, options })
+        return { dispose: async () => {} }
+      },
     },
     storage: {
       get: async (key) => storage.get(key),
@@ -117,7 +122,7 @@ function createContext({
     },
   }
 
-  return { ctx, providers, commands, integrations, synthetic, storage }
+  return { ctx, providers, commands, integrations, synthetic, storage, hooks }
 }
 
 const kiloPayload = {
@@ -270,7 +275,7 @@ test("registers Kilo provider and command when training is allowed", async () =>
   assert.equal(providers[0].models[0].id, "kilo-auto/free")
   assert.equal(commands.length, 1)
   assert.equal(commands[0].name, "free-models")
-  assert.ok(storage.get("free-models:inventory:v17"))
+  assert.ok(storage.get("free-models:inventory:v18"))
 })
 
 test("does not register a provider when policy blocks every model", async () => {
@@ -495,7 +500,7 @@ test("resolves Cloudflare Workers AI connection and account ID", async () => {
     assert.equal(providers[0].info.package, "@opencode/ai/providers/cloudflare-workers-ai")
     assert.equal(providers[0].info.settings.accountId, "acct-123")
     assert.equal(providers[0].models.length, 1)
-    const cachedProvider = storage.get("free-models:inventory:v17").providers
+    const cachedProvider = storage.get("free-models:inventory:v18").providers
       .find((provider) => provider.providerId === "free-cloudflare")
     assert.equal(cachedProvider.package, "@opencode/ai/providers/cloudflare-workers-ai")
     assert.equal(cachedProvider.settings.accountId, "acct-123")
@@ -526,7 +531,7 @@ test("preserves Cloudflare provider metadata when registering from cache", async
       return jsonResponse({})
     },
   })
-  storage.set("free-models:inventory:v17", {
+  storage.set("free-models:inventory:v18", {
     version: 1,
     fetchedAt: Date.now(),
     credentialFingerprint: credentialFingerprint({
@@ -561,6 +566,89 @@ test("preserves Cloudflare provider metadata when registering from cache", async
   assert.equal(provider.info.package, "@opencode/ai/providers/cloudflare-workers-ai")
   assert.equal(provider.info.settings.accountId, "acct-123")
   assert.equal(provider.models.length, 1)
+})
+
+test("registers a Cloudflare HTTP hook that preserves tool calls and results", async () => {
+  const { ctx, hooks } = createContext({
+    options: {
+      providers: Object.fromEntries(PROVIDER_KEYS.map((key) => [key, { enabled: false }])),
+    },
+  })
+  await plugin.setup(ctx)
+
+  assert.equal(hooks.length, 1)
+  assert.equal(hooks[0].name, "http.request")
+  assert.deepEqual(hooks[0].options, { providerID: "free-cloudflare" })
+  const toolCalls = [{ id: "call-1", type: "function", function: { name: "read", arguments: "{}" } }]
+  const body = {
+    model: "test-model",
+    stream: true,
+    messages: [
+      { role: "user", content: [{ type: "text", text: "Hello" }] },
+      { role: "assistant", content: null, tool_calls: toolCalls },
+      { role: "tool", content: [{ type: "text", text: "Result" }], tool_call_id: "call-1" },
+    ],
+  }
+  const request = new Request("https://example.com/v1/chat/completions", {
+    method: "POST",
+    headers: { "content-type": "application/json", "content-length": "999", "x-test": "keep" },
+    body: JSON.stringify(body),
+  })
+  const event = { request }
+  await hooks[0].callback(event)
+
+  assert.notEqual(event.request, request)
+  assert.equal(event.request.headers.has("content-length"), false)
+  assert.equal(event.request.headers.get("x-test"), "keep")
+  assert.deepEqual(await event.request.json(), {
+    ...body,
+    messages: [
+      { role: "user", content: "Hello" },
+      { role: "assistant", content: "", tool_calls: toolCalls },
+      { role: "tool", content: "Result", tool_call_id: "call-1" },
+    ],
+  })
+  assert.deepEqual(await request.json(), body)
+})
+
+test("Cloudflare HTTP hook leaves invalid or unrelated requests untouched", async () => {
+  const { ctx, hooks } = createContext({
+    options: {
+      providers: Object.fromEntries(PROVIDER_KEYS.map((key) => [key, { enabled: false }])),
+    },
+  })
+  await plugin.setup(ctx)
+  for (const [path, method, body] of [
+    ["/chat/completions", "GET", undefined],
+    ["/models", "POST", "{}"],
+    ["/chat/completions", "POST", "invalid JSON"],
+    ["/chat/completions", "POST", "{}"],
+    ["/chat/completions", "POST", '{"messages":[null]}'],
+  ]) {
+    const request = new Request(`https://example.com${path}`, { method, body })
+    const event = { request }
+    await hooks[0].callback(event)
+    assert.equal(event.request, request)
+    if (body !== undefined) assert.equal(await request.text(), body)
+  }
+})
+
+test("disposes the Cloudflare hook and supports hosts without session hooks", async () => {
+  const { ctx } = createContext({
+    options: {
+      providers: Object.fromEntries(PROVIDER_KEYS.map((key) => [key, { enabled: false }])),
+    },
+  })
+  let disposed = 0
+  ctx.session.hook = async () => ({ dispose: async () => { disposed += 1 } })
+  const cleanup = await plugin.setup(ctx)
+  await cleanup()
+  assert.equal(disposed, 1)
+
+  delete ctx.session.hook
+  const cleanupWithoutHook = await plugin.setup(ctx)
+  await cleanupWithoutHook()
+  assert.equal(disposed, 1)
 })
 
 test("Ollama Cloud adapter skips without an API key", async () => {

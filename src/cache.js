@@ -1,4 +1,4 @@
-export const CACHE_KEY = "free-models:inventory:v17"
+export const CACHE_KEY = "free-models:inventory:v18"
 
 export function credentialFingerprint(credentials = {}) {
   const parts = []

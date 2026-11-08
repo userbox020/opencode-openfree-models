@@ -222,7 +222,7 @@ Find the account ID in the dashboard:
 
 Create the token at [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens). Use an **Account** policy with **Workers AI → Read** scoped to your account. No Zone permission is needed.
 
-Cloudflare is text-only in practice, **not agent-compatible**. Models are marked `tools: false`, but current OpenCode agents still expose tools regardless of `capabilities.tools = false`, causing content-array errors on tool calls. This is not resolved by changing credentials. See [provider results](providers.md#free-cloudflare).
+Cloudflare tool calls use a provider-scoped HTTP request hook that flattens array/null message content to strings while preserving tool calls, tool-result IDs, and user images. Cache `v18` carries per-model tool capability. Model quality and Workers-plan entitlement still vary. See [provider results](providers.md#free-cloudflare).
 
 Trial-credit providers are excluded unless:
 
@@ -241,7 +241,7 @@ Trial-credit providers are excluded unless:
 | `timeoutMs` | `8000` | Per-request timeout |
 | `ttlSeconds` | `21600` | Inventory cache lifetime |
 
-The inventory cache key is `free-models:inventory:v17`. Cached provider records preserve `package` and `settings`, so Cloudflare retains `@opencode/ai/providers/cloudflare-workers-ai` after a cache hit.
+The inventory cache key is `free-models:inventory:v18`. Cached provider records preserve `package` and `settings`, so Cloudflare retains `@opencode/ai/providers/cloudflare-workers-ai` after a cache hit.
 
 ## Scripts
 
