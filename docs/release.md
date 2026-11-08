@@ -28,7 +28,15 @@ Do not run live checks in pull-request CI.
 
 ## Distribution
 
-The plugin can be installed from npm, the public repository, or a local checkout.
+The plugin can be installed from GitHub, npm (once published), or a local checkout.
+
+From GitHub:
+
+```powershell
+opencode plugin add github:userbox020/opencode-openfree-models
+```
+
+From npm:
 
 ```powershell
 opencode plugin add opencode-openfree-models@0.2.0
