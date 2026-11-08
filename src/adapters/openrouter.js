@@ -4,6 +4,19 @@ import { normalizeInput, positiveInt, supportsTools } from "./common.js"
 const CATALOG_URL = "https://openrouter.ai/api/v1/models"
 const BASE_URL = "https://openrouter.ai/api/v1"
 
+function numericPrice(value) {
+  if (typeof value !== "number" && typeof value !== "string") return NaN
+  if (typeof value === "string" && value.trim() === "") return NaN
+  return Number(value)
+}
+
+function isZeroPrice(value) {
+  const price = numericPrice(value)
+  if (!Number.isFinite(price) || price !== 0) return false
+  // A nonzero decimal significand can underflow to zero during Number conversion.
+  return typeof value === "number" || !/[1-9]/.test(value.trim().split(/[eE]/)[0])
+}
+
 export function normalizeOpenRouterModel(model) {
   const id = String(model.id)
   const outputModalities = Array.isArray(model.architecture?.output_modalities)
@@ -70,7 +83,15 @@ export async function discoverOpenRouter(config) {
   const models = items
     .filter((model) => {
       if (!model || typeof model.id !== "string") return false
-      return Number(model.pricing?.prompt) === 0 && Number(model.pricing?.completion) === 0
+      const pricing = model.pricing
+      if (!pricing || typeof pricing !== "object" || Array.isArray(pricing)) return false
+      if (!isZeroPrice(pricing.prompt) || !isZeroPrice(pricing.completion)) return false
+      return !Object.values(pricing).some((value) => {
+        const price = numericPrice(value)
+        if (!Number.isFinite(price)) return false
+        if (price !== 0) return price > 0
+        return !isZeroPrice(value) && !value.trim().startsWith("-")
+      })
     })
     .map(normalizeOpenRouterModel)
     .filter(Boolean)
