@@ -2,6 +2,7 @@
 
 ## 0.2.0
 
+- Document global installation as the supported path and add a global plugin-options example for broad policy plus Cloudflare account ID; verified 68 models across 7 providers in a clean workspace.
 - Preserve cached provider `package` and `settings`; bump the inventory cache key to `free-models:inventory:v18` so Cloudflare retains `@opencode/ai/providers/cloudflare-workers-ai` and per-model tool capability.
 - Add a provider-scoped `ctx.session.hook("http.request")` for Cloudflare that flattens array/null message content to strings while preserving `tool_calls`, tool-result IDs, roles, and user images. Tool round-trips verified on llama-3.3-70b and glm-4.7-flash; Cloudflare models now derive tool capability from the catalog instead of forcing `tools: false`.
 - Add exact-ID `providers.ollamaCloud.allowlist` and `denylist` filters. Empty/absent lists do not filter; denylist wins. Catalog discovery cannot determine plan entitlement.

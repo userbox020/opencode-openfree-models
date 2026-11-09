@@ -81,13 +81,43 @@ Groq free-tier models are registered tool-less because of the 8K TPM limit. Pref
 
 ## Install
 
-GitHub (recommended; verified 2026-11-07):
+`opencode plugin add` installs the plugin globally; every workspace then uses the same copy.
 
 ```powershell
 opencode plugin add github:userbox020/opencode-openfree-models
 ```
 
-This installs from the public `main` branch. It was verified end-to-end in an isolated OpenCode config and registered 12 anonymous `free-kilo` models without credentials.
+This was verified end-to-end in an isolated OpenCode config and registered 12 anonymous `free-kilo` models without credentials.
+
+### Global options (recommended)
+
+Add the plugin as an object in the global `opencode.jsonc` to enable the broad provider set everywhere:
+
+```jsonc
+{
+  "plugins": [
+    {
+      "package": "github:userbox020/opencode-openfree-models",
+      "options": {
+        "policy": {
+          "allowFreeTier": true,
+          "allowTraining": true,
+          "allowUnknownPrivacy": true,
+          "allowTrialCredits": false
+        },
+        "providers": {
+          "cloudflare": {
+            "enabled": true,
+            "accountId": "YOUR_ACCOUNT_ID"
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+Global options override project `.opencode/free-models.json` for policy and providers. API keys remain in OpenCode auth. This configuration produced 68 models across 7 providers in a clean workspace.
 
 npm (not yet published):
 
@@ -95,23 +125,10 @@ npm (not yet published):
 opencode plugin add opencode-openfree-models@0.2.0
 ```
 
-From this checkout:
+Local development only (do not add alongside the global install):
 
 ```powershell
 opencode plugin add ./opencode-openfree-models
-```
-
-Or add an explicit entry:
-
-```jsonc
-{
-  "plugins": [
-    {
-      "package": "github:userbox020/opencode-openfree-models",
-      "options": {}
-    }
-  ]
-}
 ```
 
 Restart OpenCode or the service and start a new session.

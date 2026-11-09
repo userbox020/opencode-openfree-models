@@ -28,21 +28,15 @@ Do not run live checks in pull-request CI.
 
 ## Distribution
 
-The plugin can be installed from GitHub, npm (once published), or a local checkout.
-
-From GitHub:
+`opencode plugin add` installs globally. GitHub is the primary path; npm is pending.
 
 ```powershell
 opencode plugin add github:userbox020/opencode-openfree-models
 ```
 
-From npm:
+Use global plugin options in `opencode.jsonc` for the broad provider set; see the README. Do not add a project-local copy alongside the global plugin.
 
-```powershell
-opencode plugin add opencode-openfree-models@0.2.0
-```
-
-Local checkout:
+Local checkout is for development only:
 
 ```powershell
 opencode plugin add ./opencode-openfree-models

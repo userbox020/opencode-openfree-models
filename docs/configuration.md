@@ -2,29 +2,31 @@
 
 ## Location
 
-Project config:
-
-```text
-.opencode/free-models.json
-```
-
-Plugin options can override file config:
+`opencode plugin add` installs the plugin globally. Configure it with global `opencode.jsonc` plugin options:
 
 ```jsonc
 {
   "plugins": [
     {
-      "package": "./opencode-openfree-models",
+      "package": "github:userbox020/opencode-openfree-models",
       "options": {
         "policy": {
-          "allowTraining": false,
-          "allowUnknownPrivacy": false
+          "allowTraining": true,
+          "allowUnknownPrivacy": true
+        },
+        "providers": {
+          "cloudflare": {
+            "enabled": true,
+            "accountId": "YOUR_ACCOUNT_ID"
+          }
         }
       }
     }
   ]
 }
 ```
+
+Project config `.opencode/free-models.json` is optional. Merge order: built-in defaults → project file → plugin options. Plugin options win.
 
 ## Schema
 
